@@ -1,15 +1,23 @@
-# Usa la imagen base de Ubuntu
-FROM ubuntu:latest
+FROM ubuntu:20.04
+LABEL maintainer="ahcipnitar <ahcipnitar@gmail.com>"
 
-# Instala dependencias
-RUN apt update && apt install -y wget curl tmux
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV GOTTY_TAG_VER v1.0.1
 
-# Descarga e instala Gotty
-RUN wget -O /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
-    chmod +x /usr/local/bin/gotty
+RUN apt-get -y update && \
+    apt-get install -y curl && \
+    curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
+    | tar xzC /usr/local/bin && \
+    apt-get purge --auto-remove -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists*
 
-# Expone el puerto 8080
+
+COPY /run_gotty.sh /run_gotty.sh
+
+RUN chmod 744 /run_gotty.sh
+
 EXPOSE 8080
 
-# Comando para iniciar la terminal con Gotty
-CMD ["gotty", "-w", "bash"]
+CMD ["/bin/bash","/run_gotty.sh"]
